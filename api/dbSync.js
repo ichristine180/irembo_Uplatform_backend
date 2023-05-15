@@ -1,0 +1,10 @@
+import Profile from "./src/database/model/user_profile.js";
+import Acount from "./src/database/model/user_account.js";
+import sequelize from "./src/database/config/db.js";
+
+const syncDatabase = async () => {
+  // pass {force: true} to drop the tables and recreate them
+  await sequelize.sync({ force: true });
+};
+
+syncDatabase();
