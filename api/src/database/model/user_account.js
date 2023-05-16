@@ -1,8 +1,7 @@
 import Sequelize, { DataTypes } from "sequelize";
 import db from "../config/db.js";
-import Profile from "./user_profile.js";
 
-const Acount = db.define("user_acount", {
+const Account = db.define("user_account", {
   id: {
     type: DataTypes.UUID,
     allowNull: false,
@@ -20,4 +19,4 @@ const Acount = db.define("user_acount", {
     allowNull: false,
   },
 });
-export default Acount;
+export default Account;
