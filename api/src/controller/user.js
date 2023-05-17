@@ -1,6 +1,6 @@
 import Profile from "../database/model/user_profile.js";
 import Account from "../database/model/user_account.js";
-import { handleResponse, validateRequiredParams } from "./helper.js";
+import { _validatePassword, handleResponse, validateRequiredParams } from "./helper.js";
 import jwt from "./jwt.js";
 import { redisAsyncClient } from "../../index.js";
 const requiredParams = [
@@ -13,15 +13,7 @@ const requiredParams = [
   "nationality",
   "profile_photo",
 ];
-const _validatePassword = (password) => {
-  const strongRegex =
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
-  if (!strongRegex.test(password)) {
-    throw new Error(
-      "Password should be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit, and one special character (!@#$%^&*)"
-    );
-  }
-};
+
 
 const _validation = (req) => {
   validateRequiredParams(req.body, ["accountData", "profileData"]);

@@ -27,3 +27,12 @@ export const validateRequiredParams = (params, requiredParams) => {
     );
   }
 };
+export const _validatePassword = (password) => {
+  const strongRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
+  if (!strongRegex.test(password)) {
+    throw new Error(
+      "Password should be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit, and one special character (!@#$%^&*)"
+    );
+  }
+};
