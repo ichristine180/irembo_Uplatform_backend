@@ -17,7 +17,8 @@ export const login = async (req, res) => {
     if (user == null) return handleResponse(res, true, "User not found");
     const match = await jwtt.comparePassword(password, user.password);
     if (!match) return handleResponse(res, true, "Password is incorrect!");
-    await _handleLogin(res, user.id);
+    // after successfull login we are sending code for multifactor authentication
+    await _sendCode(req, res, user.id);
   } catch (error) {
     handleResponse(res, true, error.message);
   }
@@ -41,7 +42,6 @@ export const isAuthenticated = async (req, res, next) => {
   try {
     const redisToken = await redisAsyncClient.get(token);
     if (!redisToken) return handleResponse(res, true, "Unauthorized");
-
     // Check if token is expired
     await _isExpired(res, token, "token is expired");
     next();
@@ -92,6 +92,18 @@ export const resetPassword = async (req, res) => {
     handleResponse(res, true, error.message);
   }
 };
+export const verifyCode = async (req, res) => {
+  try {
+    validateRequiredParams(req.body, ["code"]);
+    //in redis we have code as the key and user id as value
+    const id = await redisAsyncClient.get(req.body.code);
+    if (!id) return handleResponse(res, true, "Unauthorized");
+    await _isExpired(res, req.body.code, "Code is expired");
+    await _handleLogin(res, id, req.body.code);
+  } catch (error) {
+    handleResponse(res, true, error.message);
+  }
+};
 const _findByMobile = async (mobile) =>
   Account.findOne({
     where: { mobile_no: mobile },
@@ -103,10 +115,11 @@ const _findById = async (id) =>
     raw: true,
   });
 
-const _handleLogin = async (res, id) => {
+const _handleLogin = async (res, id, code) => {
   const token = jwtt.generateToken({ id });
   // Store token in Redis cache for future validation
   await redisAsyncClient.setEx(token, 60, token); // expire after 10 minutes
+  redisAsyncClient.del(code);
   return handleResponse(res, false, "success", { id, token });
 };
 const _isExpired = async (res, key, message) => {
@@ -129,7 +142,7 @@ const _sendLink = async (req, res, text) => {
       to: req.body.mobile_no,
       text: text + userToken,
     });
-   return handleResponse(res, false, "link sent! please check your phone...");
+    return handleResponse(res, false, "link sent! please check your phone...");
   } catch (error) {
     handleResponse(res, true, error.message);
   }
@@ -141,4 +154,16 @@ const _validateLink = async (req, res) => {
   if (!userId) return handleResponse(res, true, "Invalid login link");
   await _isExpired(res, userToken, "Login link is expired");
   return userId;
+};
+const _sendCode = async (req, res, id) => {
+  // Generate a random code
+  const code = Math.floor(1000 + Math.random() * 9000).toString();
+  // Store the code in Redis
+  redisAsyncClient.setEx(code, 300, id);
+  await sendSms({ to: req.body.mobile_no, text: `Code ${code}` });
+  return handleResponse(
+    res,
+    false,
+    "Code sent successfully,please check your phone"
+  );
 };
