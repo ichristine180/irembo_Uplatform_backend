@@ -8,7 +8,7 @@ import redis from "redis";
 dotenv.config();
 //creating redis server for caching data
 export const redisAsyncClient = redis.createClient(
-  process.env.PORT || 6379,
+  // process.env.PORT || 6379,
   process.env.REDIS_URL
 );
 await redisAsyncClient.connect();
