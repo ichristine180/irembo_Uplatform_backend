@@ -18,5 +18,10 @@ const Account = db.define("user_account", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  role: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    default: 0,
+  },
 });
 export default Account;

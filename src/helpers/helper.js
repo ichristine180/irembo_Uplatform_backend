@@ -1,18 +1,21 @@
-export const handleResponse = (res, error, message, data) => {
+import { redisAsyncClient } from "../../index.js";
+
+export const handleResponse = (res, error, message, data, statusCode) => {
   if (error) {
-    res.status(500).json({
-      error: true,
+    res.status(statusCode || 500).json({
+      success: false,
       message,
-      result: [],
+      data: [],
     });
   } else {
-    res.status(200).json({
-      error: false,
+    res.status(statusCode || 200).json({
+      success: true,
       message,
-      result: data || [],
+      data: data || [],
     });
   }
 };
+
 
 export const validateRequiredParams = (params, requiredParams) => {
   const missingParams = [];
@@ -34,5 +37,13 @@ export const _validatePassword = (password) => {
     throw new Error(
       "Password should be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit, and one special character (!@#$%^&*)"
     );
+  }
+};
+ // check if redis value is expired
+export const _isExpired = async (res, key, message) => {
+  const ttl = await redisAsyncClient.ttl(key);
+  if (ttl < 0) {
+    redisAsyncClient.del(key);
+    return handleResponse(res, true, message);
   }
 };

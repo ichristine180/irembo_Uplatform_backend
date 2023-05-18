@@ -2,7 +2,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import dotenv from "dotenv";
-import routes from "./src/routes/user.js";
+import api from "./src/routers/index.js";
 import rateLimit from "express-rate-limit";
 import redis from "redis";
 dotenv.config();
@@ -25,7 +25,7 @@ const limiter = rateLimit({
   message: "Too many attempts, please try again later",
 });
 app.use(limiter);
-app.use("/api", routes);
+app.use("/api", api);
 
 const PORT = process.env.PORT || 3000;
 

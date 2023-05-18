@@ -1,26 +1,31 @@
-import jwt from "jsonwebtoken";
 import {
+  _isExpired,
   _validatePassword,
   handleResponse,
   validateRequiredParams,
-} from "./helper.js";
+} from "../helpers/helper.js";
 import Account from "../database/model/user_account.js";
-import jwtt from "./jwt.js";
+import jwtt from "../helpers/jwt.js";
 import { redisAsyncClient } from "../../index.js";
-import { sendSms } from "./sendSms.js";
+import { sendSms } from "../services/sendSms.js";
+import { sendAuthenticationCode } from "../services/auth.js";
+import { findUserById, findUserByMobile } from "../services/user.js";
 
 export const login = async (req, res) => {
   try {
     validateRequiredParams(req.body, ["mobile_no", "password"]);
     const { mobile_no, password } = req.body;
-    const user = await _findByMobile(mobile_no);
-    if (user == null) return handleResponse(res, true, "User not found");
-    const match = await jwtt.comparePassword(password, user.password);
-    if (!match) return handleResponse(res, true, "Password is incorrect!");
-    // after successfull login we are sending code for multifactor authentication
-    await _sendCode(req, res, user.id);
+    const user = await findUserByMobile(mobile_no);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    const passwordMatch = await _comparePassword(password, user.password);
+    if (!passwordMatch) {
+      throw new Error("Incorrect password");
+    }
+    await sendAuthenticationCode(req, res, user.id);
   } catch (error) {
-    handleResponse(res, true, error.message);
+    return handleResponse(res, true, error.message || "Error occurred");
   }
 };
 
@@ -31,22 +36,7 @@ export const logout = async (req, res) => {
     await redisAsyncClient.del(token);
     return handleResponse(res, false, "Logged out successfully");
   } catch (error) {
-    handleResponse(res, true, error.message);
-  }
-};
-
-export const isAuthenticated = async (req, res, next) => {
-  const token = req.headers.authtoken?.split(" ")[1];
-  if (!token) return handleResponse(res, true, "authToken is missing");
-  // Check if token is valid and stored in Redis cache
-  try {
-    const redisToken = await redisAsyncClient.get(token);
-    if (!redisToken) return handleResponse(res, true, "Unauthorized");
-    // Check if token is expired
-    await _isExpired(res, token, "token is expired");
-    next();
-  } catch (error) {
-    return handleResponse(res, true, "Internal Server Error");
+    handleResponse(res, true, "Error occurred during logout");
   }
 };
 
@@ -77,7 +67,7 @@ export const resetPassword = async (req, res) => {
     const userId = await _validateLink(req, res);
     validateRequiredParams(req.body, ["old_password", "password"]);
     _validatePassword(req.body.password);
-    const user = await _findById(userId);
+    const user = await findUserById(userId);
     const match = await jwtt.comparePassword(
       req.body.old_password,
       user.password
@@ -104,40 +94,21 @@ export const verifyCode = async (req, res) => {
     handleResponse(res, true, error.message);
   }
 };
-const _findByMobile = async (mobile) =>
-  Account.findOne({
-    where: { mobile_no: mobile },
-    raw: true,
-  });
-const _findById = async (id) =>
-  Account.findOne({
-    where: { id: id },
-    raw: true,
-  });
 
 const _handleLogin = async (res, id, code) => {
   const token = jwtt.generateToken({ id });
   // Store token in Redis cache for future validation
-  await redisAsyncClient.setEx(token, 60, token); // expire after 10 minutes
+  await redisAsyncClient.setEx(token, 600, token); // expire after 10 minutes
   redisAsyncClient.del(code);
   return handleResponse(res, false, "success", { id, token });
-};
-const _isExpired = async (res, key, message) => {
-  const ttl = await redisAsyncClient.ttl(key);
-  if (ttl < 0) {
-    redisAsyncClient.del(key);
-    return handleResponse(res, true, message);
-  }
 };
 
 const _sendLink = async (req, res, text) => {
   try {
     validateRequiredParams(req.body, ["mobile_no"]);
-    const user = await _findByMobile(req.body.mobile_no);
-    //Generate a unique token and associate it with the user's account
-    const userToken = jwtt.generateToken(user.id); // e.g. "abc123"
-    redisAsyncClient.setEx(userToken, 300, user.id);
-    // Send an SMS to user's mobile number
+    const user = await findUserByMobile(req.body.mobile_no);
+    const userToken = jwtt.generateToken(user.id);
+    await redisAsyncClient.setEx(userToken, 300, user.id);
     await sendSms({
       to: req.body.mobile_no,
       text: text + userToken,
@@ -155,15 +126,7 @@ const _validateLink = async (req, res) => {
   await _isExpired(res, userToken, "Login link is expired");
   return userId;
 };
-const _sendCode = async (req, res, id) => {
-  // Generate a random code
-  const code = Math.floor(1000 + Math.random() * 9000).toString();
-  // Store the code in Redis
-  redisAsyncClient.setEx(code, 300, id);
-  await sendSms({ to: req.body.mobile_no, text: `Code ${code}` });
-  return handleResponse(
-    res,
-    false,
-    "Code sent successfully,please check your phone"
-  );
+
+const _comparePassword = async (password, hash) => {
+  return await jwtt.comparePassword(password, hash);
 };

@@ -1,7 +1,12 @@
 import Profile from "../database/model/user_profile.js";
 import Account from "../database/model/user_account.js";
-import { _validatePassword, handleResponse, validateRequiredParams } from "./helper.js";
-import jwt from "./jwt.js";
+import CustomError from "../helpers/CustomError.js";
+import {
+  _validatePassword,
+  handleResponse,
+  validateRequiredParams,
+} from "../helpers/helper.js";
+import jwt from "../helpers/jwt.js";
 import { redisAsyncClient } from "../../index.js";
 const requiredParams = [
   "first_name",
@@ -14,7 +19,6 @@ const requiredParams = [
   "profile_photo",
 ];
 
-
 const _validation = (req) => {
   validateRequiredParams(req.body, ["accountData", "profileData"]);
   const { profileData, accountData } = req.body;
@@ -25,25 +29,36 @@ const _validation = (req) => {
 };
 export const signup = async (req, res) => {
   try {
-    // checking if we have provided email redis cache
+    // checking if we have provided email in redis cache
     const userExists = await redisAsyncClient.get(req.body.profileData.email);
-    if (userExists != null)
-      return handleResponse(res, true, "User already exists");
+    if (userExists != null) throw new CustomError("User already exists", 409);
     const { profileData, accountData } = _validation(req);
     accountData.password = await jwt.hashPassword(accountData.password);
     const accountResult = await Account.create(accountData);
-    if (accountResult) {
-      profileData.user_account_id = accountResult.id;
-      await Profile.create(profileData);
-    }
-    //caching email for future use in checking if user is already exit
-    await redisAsyncClient.set(
-      profileData.email,
-      JSON.stringify(profileData.email)
-    );
-
+    if (accountResult) await _createProfile(profileData, accountResult);
+    await _cashingEmail(profileData);
     handleResponse(res, false, "Registered successfully");
   } catch (error) {
-    handleResponse(res, true, error.message);
+    handleResponse(res, true, error.message, null, error.status);
   }
+};
+export const saveImage = (req, res) => {
+  try {
+    const file = req.file;
+    const imageUrl = file.path;
+    handleResponse(res, false, "succes", { imageUrl });
+  } catch (error) {
+    console.error(error);
+    handleResponse(res, true, error.message, null, error.status);
+  }
+};
+const _cashingEmail = async (profileData) =>
+  await redisAsyncClient.set(
+    profileData.email,
+    JSON.stringify(profileData.email)
+  );
+
+const _createProfile = async (profileData, accountResult) => {
+  profileData.user_account_id = accountResult.id;
+  await Profile.create(profileData);
 };
