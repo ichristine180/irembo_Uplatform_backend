@@ -98,7 +98,7 @@ export const verifyCode = async (req, res) => {
 const _handleLogin = async (res, id, code) => {
   const token = jwtt.generateToken({ id });
   // Store token in Redis cache for future validation
-  await redisAsyncClient.setEx(token, 600, token); // expire after 10 minutes
+  await redisAsyncClient.setEx(token, 600, token);
   redisAsyncClient.del(code);
   return handleResponse(res, false, "success", { id, token });
 };
