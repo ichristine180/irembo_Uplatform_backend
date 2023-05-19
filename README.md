@@ -1,4 +1,4 @@
-# Irembo_Uplatform_backend
+# user management system backend
 
 ## Built With
 - Node.js
@@ -26,4 +26,136 @@ You can now use any API development tool like Postman to test the endpoints.
 NOTE: The server will be running on port 3000 if you didn't specify it in the `.env` file as mentioned above.
 
 Make sure to have Redis installed and running before starting the server. Redis is used for caching or other purposes in this project, and it's required for proper functionality.
+
+## Endpoints
+
+- `POST /signup`
+  - Description: Endpoint for user signup.
+  - Controller: `signup`
+
+- `POST /upload`
+  - Description: Endpoint for uploading an image.
+  - Middleware: `isAuthenticated`, `uploadImage`
+  - Controller: `saveImage`
+
+- `POST /info`
+  - Description: Endpoint for getting user information by account ID.
+  - Middleware: `isAuthenticated`
+  - Controller: `getUserInfoByAccountId`
+
+- `POST /verification`
+  - Description: Endpoint for requesting account verification.
+  - Middleware: `isAuthenticated`
+  - Controller: `requestVerifyAccount`
+
+- `POST /verification/feedback`
+  - Description: Endpoint for providing verification feedback.
+  - Controller: `verificationFeedback`
+
+- `POST /login`
+  - Description: Endpoint for user login.
+  - Controller: `login`
+
+- `POST /verify`
+  - Description: Endpoint for verifying a code.
+  - Controller: `verifyCode`
+
+- `POST /login/send`
+  - Description: Endpoint for sending a login link.
+  - Controller: `sendLoginLink`
+
+- `POST /login/link`
+  - Description: Endpoint for login support link.
+  - Controller: `loginSupportLink`
+
+- `POST /logout`
+  - Description: Endpoint for user logout.
+  - Middleware: `isAuthenticated`
+  - Controller: `logout`
+
+- `POST /password/reset`
+  - Description: Endpoint for sending a reset password link.
+  - Controller: `sendResetPasswordLink`
+
+- `POST /resetPassword`
+  - Description: Endpoint for resetting a password.
+  - Controller: `resetPassword`
+
+## Usage
+
+To access these endpoints, make HTTP requests to the corresponding URL paths using the specified HTTP methods.
+
+Please note that some endpoints require authentication, indicated by the `isAuthenticated` middleware.
+
+## Examples
+- User signup:
+  - Method: `POST`
+  - URL: `/signup`
+  - Request Body: { username, email, password }
+  - Response: Success message or error message
+
+- Upload image:
+  - Method: `POST`
+  - URL: `/upload`
+  - Request Body: Form data with `file` field containing the image file
+  - Response: Image upload success message or error message
+
+- Get user information by account ID:
+  - Method: `POST`
+  - URL: `/info`
+  - Request Body: None (Authentication token included in headers)
+  - Response: User information object or error message
+
+- Request account verification:
+  - Method: `POST`
+  - URL: `/verification`
+  - Request Body: None (Authentication token included in headers)
+  - Response: Verification request success message or error message
+
+- Provide verification feedback:
+  - Method: `POST`
+  - URL: `/verification/feedback`
+  - Request Body: { feedback }
+  - Response: Feedback submission success message or error message
+- User login:
+  - Method: `POST`
+  - URL: `/login`
+  - Request Body: { mobile_no, password }
+  - Response: receive otp on provided mobile
+
+- Verify code:
+  - Method: `POST`
+  - URL: `/verify`
+  - Request Body: { code }
+  - Response: Verification success or failure message
+
+- Send login link:
+  - Method: `POST`
+  - URL: `/login/send`
+  - Request Body: { mobile_no }
+  - Response: Success message or error message
+
+- Login support link:
+  - Method: `POST`
+  - URL: `/login/link`
+  - Request Body: { mobile_no }
+  - Response: Support link success message or error message
+
+- User logout:
+  - Method: `POST`
+  - URL: `/logout`
+  - Request Body: None
+  - Response: Logout success message
+
+- Send reset password link:
+  - Method: `POST`
+  - URL: `/password/reset`
+  - Request Body: { mobile_no }
+  - Response: Reset password link success message or error message
+
+- Reset password:
+  - Method: `POST`
+  - URL: `/resetPassword`
+  - Request Body: { old_password, newPassword }
+  - Response: Password reset success message or error message
 
