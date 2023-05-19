@@ -2,13 +2,13 @@ import { redisAsyncClient } from "../../index.js";
 
 export const handleResponse = (res, error, message, data, statusCode) => {
   if (error) {
-    res.status(statusCode || 500).json({
+    res.status(statusCode || 200).json({
       success: false,
       message,
       data: [],
     });
   } else {
-    res.status(statusCode || 200).json({
+    res.status(statusCode || 500).json({
       success: true,
       message,
       data: data || [],

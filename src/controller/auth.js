@@ -44,11 +44,12 @@ export const sendLoginLink = async (req, res) =>
   _sendLink(
     req,
     res,
-    `Click here to login  ${process.env.UI_BASE_PATH}/login/link/?token=`
+    `Click here to login  ${process.env.UI_BASE_PATH}/login/link/`
   );
 export const loginSupportLink = async (req, res) => {
   try {
     const userId = await _validateLink(req, res);
+    console.log("===========", userId);
     await _handleLogin(res, userId);
   } catch (error) {
     handleResponse(res, true, error.message);
@@ -99,7 +100,7 @@ const _handleLogin = async (res, id, code) => {
   const token = jwtt.generateToken({ id });
   // Store token in Redis cache for future validation
   await redisAsyncClient.setEx(token, 600, token);
-  redisAsyncClient.del(code);
+  code && redisAsyncClient.del(code);
   return handleResponse(res, false, "success", { id, token });
 };
 
@@ -120,9 +121,9 @@ const _sendLink = async (req, res, text) => {
 };
 
 const _validateLink = async (req, res) => {
-  const userToken = req.query.token;
+  const userToken = req.body.token;
   const userId = await redisAsyncClient.get(userToken);
-  if (!userId) return handleResponse(res, true, "Invalid login link");
+  if (!userId) throw new error("Invalid login link");
   await _isExpired(res, userToken, "Login link is expired");
   return userId;
 };
