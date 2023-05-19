@@ -43,6 +43,9 @@ const UserProfile = db.define("user_profile", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  identification_type: {
+    type: DataTypes.STRING,
+  },
   identification_number: {
     type: DataTypes.STRING,
   },

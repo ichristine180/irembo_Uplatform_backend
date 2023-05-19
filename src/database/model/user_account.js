@@ -18,6 +18,10 @@ const Account = db.define("user_account", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  status: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   role: {
     type: DataTypes.INTEGER,
     allowNull: false,
