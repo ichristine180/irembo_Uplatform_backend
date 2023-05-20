@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import redis from "redis";
 dotenv.config();
 //creating redis server for caching data
+console.log("URL:====>",process.env.REDIS_URL)
 let redisClient
 if(process.env.REDIS_URL){
     redisClient = redis.createClient(process.env.REDIS_URL)
