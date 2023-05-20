@@ -4,13 +4,13 @@ import cors from "cors";
 import dotenv from "dotenv";
 import api from "./src/routers/index.js";
 import rateLimit from "express-rate-limit";
+import url from "url";
 import redis from "redis";
 dotenv.config();
-//creating redis server for caching data
-console.log("URL:====>",process.env.REDIS_URL)
 let redisClient
 if(process.env.REDIS_URL){
-    redisClient = redis.createClient(process.env.REDIS_URL)
+  const link=url.parse(process.env.REDIS_URL)
+    redisClient = redis.createClient(link)
 } else {
     redisClient = redis.createClient()
 }
