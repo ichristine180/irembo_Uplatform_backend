@@ -7,10 +7,13 @@ import rateLimit from "express-rate-limit";
 import redis from "redis";
 dotenv.config();
 //creating redis server for caching data
-export const redisAsyncClient = redis.createClient(
-  // process.env.PORT || 6379,
-  process.env.REDIS_URL
-);
+let redisClient
+if(process.env.REDIS_URL){
+    redisClient = redis.createClient(process.env.REDIS_URL)
+} else {
+    redisClient = redis.createClient()
+}
+export const redisAsyncClient = redisClient;
 await redisAsyncClient.connect();
 
 const app = express();
