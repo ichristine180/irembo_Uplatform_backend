@@ -31,8 +31,7 @@ const UserProfile = db.define("user_profile", {
     allowNull: false,
   },
   marital_status: {
-    type: DataTypes.ENUM,
-    values: ["SINGLE", "MARRIED", "DIVORCED", "WIDOWED"],
+    type: DataTypes.STRING,
     allowNull: false,
   },
   nationality: {

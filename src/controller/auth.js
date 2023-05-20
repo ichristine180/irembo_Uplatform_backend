@@ -16,6 +16,7 @@ export const login = async (req, res) => {
     validateRequiredParams(req.body, ["mobile_no", "password"]);
     const { mobile_no, password } = req.body;
     const user = await findUserByMobile(mobile_no);
+    console.log(user);
     if (!user) {
       throw new Error("User not found");
     }
@@ -52,6 +53,7 @@ export const loginSupportLink = async (req, res) => {
     console.log("===========", userId);
     await _handleLogin(res, userId);
   } catch (error) {
+    console.log(error);
     handleResponse(res, true, error.message);
   }
 };
@@ -60,7 +62,7 @@ export const sendResetPasswordLink = async (req, res) =>
   _sendLink(
     req,
     res,
-    `Click here to Change your password  ${process.env.UI_BASE_PATH}/password/reset/?token=`
+    `Click here to Change your password  ${process.env.UI_BASE_PATH}/password/reset/`
   );
 
 export const resetPassword = async (req, res) => {
@@ -108,13 +110,19 @@ const _sendLink = async (req, res, text) => {
   try {
     validateRequiredParams(req.body, ["mobile_no"]);
     const user = await findUserByMobile(req.body.mobile_no);
-    const userToken = jwtt.generateToken(user.id);
-    await redisAsyncClient.setEx(userToken, 300, user.id);
-    await sendSms({
-      to: req.body.mobile_no,
-      text: text + userToken,
-    });
-    return handleResponse(res, false, "link sent! please check your phone...");
+    if (user) {
+      const userToken = jwtt.generateToken(user.id);
+      await redisAsyncClient.setEx(userToken, 300, user.id);
+      await sendSms({
+        to: req.body.mobile_no,
+        text: text + userToken,
+      });
+      return handleResponse(
+        res,
+        false,
+        "link sent! please check your phone..."
+      );
+    } else throw new Error("user not found");
   } catch (error) {
     handleResponse(res, true, error.message);
   }
@@ -123,8 +131,9 @@ const _sendLink = async (req, res, text) => {
 const _validateLink = async (req, res) => {
   const userToken = req.body.token;
   const userId = await redisAsyncClient.get(userToken);
-  if (!userId) throw new error("Invalid login link");
+  if (!userId) throw new Error("Invalid login link");
   await _isExpired(res, userToken, "Login link is expired");
+  await redisAsyncClient.del(userToken);
   return userId;
 };
 

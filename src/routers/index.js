@@ -6,7 +6,7 @@ api.use("/auth", auth);
 api.use("/user", user);
 api.get("/", (req, res) => {
   res.json({
-    message: "Welcome to ZPlatform.",
+    message: "Welcome to uplatfrom.",
   });
 });
 api.use("/", (req, res) => {

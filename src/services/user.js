@@ -2,11 +2,13 @@ import Account from "../database/model/user_account.js";
 import UserProfile from "../database/model/user_profile.js";
 import VerificationRequest from "../database/model/account_verification_request.js";
 import CustomError from "../helpers/CustomError.js";
-export const findUserByMobile = async (mobile) =>
-  Account.findOne({
+export const findUserByMobile = async (mobile) =>{
+  console.log("Mobile number",mobile)
+  return Account.findOne({
     where: { mobile_no: mobile },
     raw: true,
   });
+}
 export const findUserById = async (id) =>
   Account.findOne({
     where: { id: id },

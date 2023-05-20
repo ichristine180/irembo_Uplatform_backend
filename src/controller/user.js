@@ -48,9 +48,10 @@ export const signup = async (req, res) => {
     const accountResult = await Account.create(accountData);
     if (accountResult) await _createProfile(profileData, accountResult);
     await _cashingEmail(profileData);
-    handleResponse(res, false, "Registered successfully");
+    handleResponse(res, false, "Registered successfully",null,201);
   } catch (error) {
-    handleResponse(res, true, error.message, null, error.status);
+    console.log(error)
+    handleResponse(res, true, error.message, null, 500);
   }
 };
 export const saveImage = (req, res) => {
