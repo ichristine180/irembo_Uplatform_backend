@@ -13,7 +13,8 @@ router.post("/signup", (req, res) => signup(req, res));
 router.post("/upload", isAuthenticated, upload.single("file"), (req, res) =>
   saveImage(req, res)
 );
-router.post("/info", isAuthenticated, (req, res) =>
+// isAuthenticated removed for
+router.post("/info", (req, res) =>
   getUserInfoByAccountId(req, res)
 );
 

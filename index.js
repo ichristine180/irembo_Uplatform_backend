@@ -27,12 +27,12 @@ redisAsyncClient.on("error", (error) => {
   console.error(error);
 });
 // Limit requests per IP to prevent brute-force attacks
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 requests per windowMs
-  message: "Too many attempts, please try again later",
-});
-app.use(limiter);
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 10, // 10 requests per windowMs
+//   message: "Too many attempts, please try again later",
+// });
+// app.use(limiter);
 app.use("/api", api);
 
 const PORT = process.env.PORT || 3000;
