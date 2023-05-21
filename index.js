@@ -5,16 +5,15 @@ import dotenv from "dotenv";
 import api from "./src/routers/index.js";
 import rateLimit from "express-rate-limit";
 import redis from "redis";
-import url from  'url';
+import url from "url";
 dotenv.config();
-
 
 const client = redis.createClient({
   password: process.env.REDIS_USER_PASSWORD,
   socket: {
-      host: process.env.REDIS_HOST,
-      port: process.env.REDIS_PORT
-  }
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+  },
 });
 
 export const redisAsyncClient = client;
@@ -23,24 +22,14 @@ await redisAsyncClient.connect();
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-const corsOptions = {
-  origin: "*",
-  credentials: true,
-  optionSuccessStatus: 200,
-};
+app.use(cors());
 
-app.use(cors(corsOptions));
-redisAsyncClient.on("error", (error) => {
-  console.error(error);
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // 10 requests per windowMs
+  message: "Too many attempts, please try again later",
 });
-// Limit requests per IP to prevent brute-force attacks
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 10, // 10 requests per windowMs
-//   message: "Too many attempts, please try again later",
-// });
-// app.use(limiter);
-
+app.use(limiter);
 
 app.use("/api", api);
 
