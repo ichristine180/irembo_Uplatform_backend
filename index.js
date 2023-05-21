@@ -9,8 +9,8 @@ import redis from "redis";
 dotenv.config();
 let redisClient
 if(process.env.REDIS_URL){
-  const link=url.parse(process.env.REDIS_URL)
-    redisClient = redis.createClient(link)
+  const redisURL=url.parse(process.env.REDIS_URL)
+    redisClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true})
 } else {
     redisClient = redis.createClient()
 }
