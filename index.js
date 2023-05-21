@@ -40,6 +40,10 @@ redisAsyncClient.on("error", (error) => {
 //   message: "Too many attempts, please try again later",
 // });
 // app.use(limiter);
+
+
+app.use("/api", api);
+
 app.get("/", (req, res) => {
   res.json({
     message: "Welcome to uplatfrom.",
@@ -50,7 +54,6 @@ app.use("/", (req, res) => {
     message: "Page not found.",
   });
 });
-app.use("/api", api);
 
 const PORT = process.env.PORT || 3000;
 
