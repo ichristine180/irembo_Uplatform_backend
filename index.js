@@ -29,6 +29,10 @@ const limiter = rateLimit({
   message: "Too many attempts, please try again later",
 });
 app.use(limiter);
+app.use((req, res, next) => {
+  res.header({"Access-Control-Allow-Origin": "*"});
+  next();
+}) 
 app.use("/api", api);
 app.get("/", (req, res) => {
   res.json({
