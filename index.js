@@ -9,11 +9,12 @@ import url from  'url';
 dotenv.config();
 
 
-const redisURL = url.parse(process.env.REDIS_URL);
 const client = redis.createClient({
-  host: redisURL.hostname,
-  port: redisURL.port,
-  password: redisURL.auth ? redisURL.auth.split(':')[1] : null,
+  password: 'nVe3GmlelH7WZ4Lfo22f6mHduGtFzXRP',
+  socket: {
+      host: 'redis-12208.c263.us-east-1-2.ec2.cloud.redislabs.com',
+      port: 12208
+  }
 });
 
 export const redisAsyncClient = client;
