@@ -4,17 +4,19 @@ import cors from "cors";
 import dotenv from "dotenv";
 import api from "./src/routers/index.js";
 import rateLimit from "express-rate-limit";
-import url from "url";
 import redis from "redis";
+import url from  'url';
 dotenv.config();
-let redisClient
-if(process.env.REDIS_URL){
-  const redisURL=url.parse(process.env.REDIS_URL)
-    redisClient = redis.createClient(redisURL.port, redisURL.hostname, {no_ready_check: true})
-} else {
-    redisClient = redis.createClient()
-}
-export const redisAsyncClient = redisClient;
+
+
+const redisURL = url.parse(process.env.REDIS_URL);
+const client = redis.createClient({
+  host: redisURL.hostname,
+  port: redisURL.port,
+  password: redisURL.auth ? redisURL.auth.split(':')[1] : null,
+});
+
+export const redisAsyncClient = client;
 await redisAsyncClient.connect();
 
 const app = express();
