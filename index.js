@@ -10,10 +10,10 @@ dotenv.config();
 
 
 const client = redis.createClient({
-  password: 'nVe3GmlelH7WZ4Lfo22f6mHduGtFzXRP',
+  password: process.env.REDIS_USER_PASSWORD,
   socket: {
-      host: 'redis-12208.c263.us-east-1-2.ec2.cloud.redislabs.com',
-      port: 12208
+      host: process.env.REDIS_HOST,
+      port: process.env.REDIS_PORT
   }
 });
 
