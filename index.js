@@ -15,6 +15,7 @@ const client = redis.createClient({
     port: process.env.REDIS_PORT,
   },
 });
+//const client = redis.createClient(process.env.REDIS_PORT);
 
 export const redisAsyncClient = client;
 await redisAsyncClient.connect();
@@ -23,6 +24,11 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
+// Allow 'authtoken' header in CORS policy
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, authtoken");
+  next();
+});
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20, // 10 requests per windowMs

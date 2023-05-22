@@ -34,10 +34,12 @@ export const logout = async (req, res) => {
   const token = req.headers.authtoken?.split(" ")[1];
   // Remove token from Redis cache
   try {
+    if (!token) throw new Error("unauthorized");
     await redisAsyncClient.del(token);
     return handleResponse(res, false, "Logged out successfully");
   } catch (error) {
-    handleResponse(res, true, "Error occurred during logout");
+    console.log(error);
+    handleResponse(res, true, error.message);
   }
 };
 
