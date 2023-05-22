@@ -47,7 +47,7 @@ export const sendLoginLink = async (req, res) =>
   _sendLink(
     req,
     res,
-    `Click here to login  ${process.env.UI_BASE_PATH}/login/link/`
+    `Click here to login  ${process.env.UI_BASE_PATH}login/link/`
   );
 export const loginSupportLink = async (req, res) => {
   try {
@@ -64,7 +64,7 @@ export const sendResetPasswordLink = async (req, res) =>
   _sendLink(
     req,
     res,
-    `Click here to Change your password  ${process.env.UI_BASE_PATH}/password/reset/`
+    `Click here to Change your password  ${process.env.UI_BASE_PATH}password/reset/`
   );
 
 export const resetPassword = async (req, res) => {
