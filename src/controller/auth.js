@@ -69,20 +69,12 @@ export const sendResetPasswordLink = async (req, res) =>
 
 export const resetPassword = async (req, res) => {
   try {
+    validateRequiredParams(req.body, ["password", "token"]);
     const userId = await _validateLink(req, res);
-    validateRequiredParams(req.body, ["old_password", "password"]);
     _validatePassword(req.body.password);
-    const user = await findUserById(userId);
-    const match = await jwtt.comparePassword(
-      req.body.old_password,
-      user.password
-    );
-    if (match) {
-      const password = await jwtt.hashPassword(req.body.password);
-      Account.update({ password }, { where: { id: userId } });
-      return handleResponse(res, false, "Password changed successfully");
-    }
-    return handleResponse(res, true, "Old password is not correct");
+    const password = await jwtt.hashPassword(req.body.password);
+    Account.update({ password }, { where: { id: userId } });
+    return handleResponse(res, false, "Password changed successfully");
   } catch (error) {
     handleResponse(res, true, error.message);
   }
